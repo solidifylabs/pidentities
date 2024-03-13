@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/solidifylabs/specops/runopts"
 )
 
@@ -60,6 +61,8 @@ func TestApproximations(t *testing.T) {
 		},
 	}
 
+	var hashes [][]byte
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			code := tt.code()
@@ -71,6 +74,7 @@ func TestApproximations(t *testing.T) {
 			opt := runopts.Func(func(c *runopts.Configuration) error {
 				contract = c.Contract
 				startGas = contract.Gas
+				hashes = append(hashes, crypto.Keccak256(c.Contract.Code))
 				return nil
 			})
 
@@ -114,4 +118,6 @@ func TestApproximations(t *testing.T) {
 			}
 		})
 	}
+
+	t.Logf("Code hashes: %#x", hashes)
 }
