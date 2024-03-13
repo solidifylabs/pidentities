@@ -65,17 +65,24 @@ func TestApproximations(t *testing.T) {
 				t.Fatalf("%T.Run() error %v", code, err)
 			}
 
+			num, denom := out[:32], out[32:]
+
 			bigPi := new(big.Rat).SetFrac(
-				new(big.Int).SetBytes(out[:32]),
-				new(big.Int).SetBytes(out[32:64]),
+				new(big.Int).SetBytes(num),
+				new(big.Int).SetBytes(denom),
 			)
-			t.Log(bigPi.FloatString(2))
+			t.Log(bigPi.FloatString(76))
 
 			// Drop `exact` flag, not an error
 			got, _ := bigPi.Float64()
 
 			if absErr := math.Abs(got - math.Pi); absErr > 0.005 {
 				t.Error(got, absErr, math.Log10(absErr))
+
+				// Source: https://gist.github.com/retrohacker/e5fff72b7b75ee058924
+				t.Logf("Pi : 0x3243f6a8885a308d313198a2e03707344a4093822299f31d0082efa98ec4e6c8")
+				t.Logf("Num: %#x", num)
+				t.Logf("Den: %#x", denom)
 			}
 
 		})
