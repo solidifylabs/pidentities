@@ -23,10 +23,7 @@ func convert(fn implementation) Code {
 		code,
 
 		Fn(MSTORE, PUSH0 /*pi on top of the stack*/),
-		Fn(MSTORE,
-			PUSH(32),
-			Fn(SHL, PUSH(bits), PUSH(1)),
-		),
+		Fn(MSTORE, PUSH(32), PUSH(bits)),
 		Fn(RETURN, PUSH0, PUSH(64)),
 	}
 }
