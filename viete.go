@@ -11,60 +11,71 @@ func Viete() Code {
 }
 
 func viete() (Code, uint8) {
-	const precision = 127
+	const bits = 127
 
 	// https://en.wikipedia.org/wiki/Vi%C3%A8te%27s_formula
 
 	const (
-		Two = Inverted(DUP1) + iota
-		Precision
-		Result
-		BigTwo
-		Root
+		loopCounter = Inverted(DUP1) + iota
+		precision
+		result
+		bigTwo
+		root
 	)
+
+	const depth = uint(root - loopCounter + 1)
 
 	const (
-		_ = Inverted(SWAP1) + iota
+		swapCounter = Inverted(SWAP1) + iota
 		_
-		SwapResult
-		_
+		swapResult
 	)
 
-	iter := Code{
-		Fn(SHL, Precision,
-			Fn(ADD, BigTwo /* top = Root */),
+	code := Code{
+		PUSH(100),                   // loops left
+		PUSH(bits),                  // precision
+		Fn(SHL, precision, PUSH(1)), // result
+		Fn(SHL, precision, PUSH(2)), // constant fixed-precision 2
+		PUSH0,                       // root
+
+		stack.ExpectDepth(depth),
+		JUMPDEST("loop"),
+		stack.SetDepth(depth),
+
+		Fn(SHL, precision, // Shift to prepare for sqrt()
+			Fn(ADD, bigTwo /* top = last root */), // The next radicand is always the last root + 2
 		),
+		stack.ExpectDepth(depth),
 
-		stack.SetDepth(1),
-		sqrtWithCleanup(), // Root
-		stack.SetDepth(5),
+		stack.SetDepth(1),     // hack for sqrt() because it expects this; SpecOps needs stack.ExpectDeeperThan().
+		sqrtWithCleanup(),     //
+		stack.SetDepth(depth), // undo the previous set
 
-		Fn(SwapResult,
+		Fn(swapResult,
 			Fn(SHR,
-				Fn(ADD, Precision, PUSH(1)),
+				Fn(ADD, precision, PUSH(1)),
 				Fn(MUL,
-					Result,
-					Root,
+					result,
+					root,
 				),
 			),
 		), POP,
-	}
+		stack.ExpectDepth(depth),
 
-	code := Code{
-		PUSH(2),
-		PUSH(precision),
-		Fn(SHL, Precision, PUSH(1)), // Result
-		Fn(SHL, Precision, Two),
-
-		PUSH0,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
+		Fn(JUMPI,
+			PUSH("loop"),
+			Fn(LT,
+				PUSH0,
+				Fn(swapCounter, Fn(SUB, loopCounter, PUSH(1))),
+			),
+		),
+		stack.ExpectDepth(depth),
 
 		Fn(DIV,
-			Fn(SHL, Precision, BigTwo),
-			Result,
+			Fn(SHL, precision, bigTwo),
+			result,
 		),
 	}
 
-	return code, precision
+	return code, bits
 }
