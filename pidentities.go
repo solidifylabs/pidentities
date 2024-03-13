@@ -1,9 +1,9 @@
 // Package pidentities implements ridiculous ways to approximate π through
-// hand-written EVM bytecode.
+// hand-written EVM bytecode. It's a shameless PR exercise for the SpecOps DSL.
 package pidentities
 
 import (
-	. "github.com/solidifylabs/specops"
+	. "github.com/solidifylabs/specops" //lint:ignore ST1001 SpecOps DSL is designed to be dot-imported
 	"github.com/solidifylabs/specops/stack"
 )
 

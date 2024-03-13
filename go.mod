@@ -1,4 +1,4 @@
-module github.com/aschlosberg/pidentities
+module github.com/solidifylabs/pidentities
 
 go 1.20
 
