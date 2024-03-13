@@ -17,7 +17,7 @@ func monteCarlo() (Code, uint8) {
 	// A unit circle inside a 2x2 square covers π/4 of the area. We can
 	// (inefficiently) approximate π using sha3 as a source of entropy!
 	const (
-		total = Inverted(DUP1) + iota
+		limit = Inverted(DUP1) + iota
 		loopCounter
 		hits
 		one
@@ -32,8 +32,8 @@ func monteCarlo() (Code, uint8) {
 	)
 
 	return Code{
-		PUSH(0x02b000),                         // loop total (~30M gas); kept as the denominator
-		total,                                  // loops remaining
+		PUSH(0x029cc0),                         // loop limit (~25M gas); kept as the denominator
+		limit,                                  // loops remaining
 		PUSH0,                                  // inside-circle count (numerator)
 		PUSH(1),                                // constant-value 1
 		Fn(SUB, Fn(SHL, PUSH(0x80), one), one), // 128-bit mask
@@ -78,7 +78,7 @@ func monteCarlo() (Code, uint8) {
 
 		Fn(DIV,
 			Fn(SHL, PUSH(bits+2), hits), // extra 2 to undo π/4
-			total,
+			limit,
 		),
 	}, bits
 }

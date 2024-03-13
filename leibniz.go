@@ -27,7 +27,7 @@ func leibniz() (Code, uint8) {
 		swapn = Inverted(SWAP1) + iota
 	)
 
-	const rounds = 100
+	const rounds = 0x0419e0 // ~25M gas
 
 	code := Code{
 		PUSH(2 * rounds),         // max n (iterates down to zero)

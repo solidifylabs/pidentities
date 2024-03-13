@@ -32,7 +32,7 @@ func viete() (Code, uint8) {
 	)
 
 	code := Code{
-		PUSH(100),                   // loops left
+		PUSH(0x68a8),                // loops left (~25M gas)
 		PUSH(bits),                  // precision
 		Fn(SHL, precision, PUSH(1)), // result
 		Fn(SHL, precision, PUSH(2)), // constant fixed-precision 2

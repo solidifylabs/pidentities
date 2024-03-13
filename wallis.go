@@ -31,7 +31,7 @@ func wallis() (Code, uint8) {
 
 	code := Code{
 		PUSH(bits),
-		PUSH(200),                   // n,
+		PUSH(0x049880),              // n (~25M gas)
 		Fn(SHL, precision, PUSH(1)), // result
 
 		JUMPDEST("loop"),

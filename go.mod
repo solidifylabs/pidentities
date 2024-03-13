@@ -2,7 +2,11 @@ module github.com/aschlosberg/pidentities
 
 go 1.20
 
-require github.com/solidifylabs/specops v0.0.0-20240307183852-f881323619a6
+require (
+	github.com/dustin/go-humanize v1.0.1
+	github.com/ethereum/go-ethereum v1.13.14
+	github.com/solidifylabs/specops v0.0.0-20240307183852-f881323619a6
+)
 
 require (
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
@@ -12,7 +16,6 @@ require (
 	github.com/crate-crypto/go-kzg-4844 v0.7.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/ethereum/c-kzg-4844 v0.4.0 // indirect
-	github.com/ethereum/go-ethereum v1.13.14 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.7.1 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect

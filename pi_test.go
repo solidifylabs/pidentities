@@ -4,6 +4,10 @@ import (
 	"math"
 	"math/big"
 	"testing"
+
+	"github.com/dustin/go-humanize"
+	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/solidifylabs/specops/runopts"
 )
 
 func TestApproximations(t *testing.T) {
@@ -11,12 +15,6 @@ func TestApproximations(t *testing.T) {
 		name string
 		code Implementation
 	}{
-		{
-			// Josh
-			// Doesn't strike me as the gambling type
-			name: "Monte Carlo",
-			code: MonteCarlo,
-		},
 		{
 			// Dan
 			// It's old-school
@@ -30,10 +28,23 @@ func TestApproximations(t *testing.T) {
 			code: BBP,
 		},
 		{
+			// Dave
+			// It'll annoy him how inefficient the convergence is
+			// It also "exhibits unusual behaviour"
+			name: "Madhava–Leibniz",
+			code: MadhavaLeibniz,
+		},
+		{
 			// Wattsy
 			// Takes experimental code to the limit
 			name: "Limit",
 			code: Limit,
+		},
+		{
+			// Josh
+			// Doesn't strike me as the gambling type
+			name: "Monte Carlo",
+			code: MonteCarlo,
 		},
 		{
 			// Simon
@@ -47,22 +58,34 @@ func TestApproximations(t *testing.T) {
 			name: "Wallis product",
 			code: Wallis,
 		},
-		{
-			// Dave
-			// It'll annoy him how inefficient the convergence is
-			// It also "exhibits unusual behaviour"
-			name: "Madhava–Leibniz",
-			code: MadhavaLeibniz,
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			code := tt.code()
 
-			out, err := code.Run(nil)
+			var (
+				startGas uint64
+				contract *vm.Contract
+			)
+			opt := runopts.Func(func(c *runopts.Configuration) error {
+				contract = c.Contract
+				startGas = contract.Gas
+				return nil
+			})
+
+			out, err := code.Run(nil, opt)
 			if err != nil {
 				t.Fatalf("%T.Run() error %v", code, err)
+			}
+
+			gasUsed := int64(startGas - contract.Gas)
+			t.Logf("Gas used: %s", humanize.Comma(gasUsed))
+			if gasUsed > 25e6 {
+				t.Error("Used too much gas; want <25M")
+			}
+			if want := int64(24_995_000); gasUsed > 75_000 && gasUsed < want {
+				t.Errorf("Gas-intensive method not optimised; want at least %s gas used", humanize.Comma(want))
 			}
 
 			num, denom := out[:32], out[32:]

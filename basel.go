@@ -46,7 +46,7 @@ func basel() (Code, uint8) {
 		Fn(JUMPI,
 			PUSH("loop"),
 			Fn(GT,
-				PUSH(1<<12),
+				PUSH(0x071040), // ~25M gas
 				Fn(swapN,
 					Fn(ADD, n, one),
 				),
