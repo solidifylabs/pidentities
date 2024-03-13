@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{proba}
+
+\begin{document}
+
+\newcommand{\gap}{\vspace{2em}}
+
+\centering
+
+\textbf{The Bailey--Borwein--Plouffe formula}
+\begin{align*}
+    \pi = \sum_{k=0}^\infty
+    \left[
+        \frac{1}{16^k}
+        \left(
+        \frac{4}{8k+1} -
+        \frac{2}{8k+4} -
+        \frac{1}{8k+5} -
+        \frac{1}{8k+6}
+        \right)
+        \right]
+\end{align*}
+
+\gap
+
+\textbf{The Basel problem}
+\begin{align*}
+    \pi = \sqrt{6 \sum_{n=1}^\infty \frac{1}{n^2}}
+\end{align*}
+
+\gap
+
+\textbf{The Madhava--Leibniz series}
+\begin{align*}
+    \pi = 4 \sum_{k=0}^\infty \frac{(-1)^k}{2k + 1}
+\end{align*}
+
+\gap
+
+\textbf{A limiting sequence}
+\begin{align*}
+    \pi     & = \lim_{n \to \infty}\frac{a^2_n}{n}      \\
+    a_0     & = 1                                       \\
+    a_{n+1} & = \left( 1 + \frac{1}{2n + 1} \right) a_n
+\end{align*}
+
+\gap
+
+\textbf{Monte Carlo}
+\begin{align*}
+    \pi & = 4 \cdot \prob( X^2 + Y^2 < 1) \\
+    X,Y & \sim \mathcal{U}(0,1)
+\end{align*}
+
+\gap
+
+\textbf{Viète's formula}
+\begin{align*}
+    \pi = \frac{2}{
+        \frac{\sqrt{2}}{2} \cdot
+        \frac{\sqrt{2 + \sqrt{2}}}{2} \cdot
+        \frac{\sqrt{2 + \sqrt{2 + \sqrt{2}}}}{2} \cdot
+        \frac{\sqrt{2 + \sqrt{2 + \sqrt{2  + \sqrt{2}}}}}{2} \ldots
+    }
+\end{align*}
+
+\gap
+\textbf{The Wallis product}
+\begin{align*}
+    \pi = \prod_{n=1}^\infty \frac{4n^2}{4n^2 - 1}
+\end{align*}
+
+\end{document}
