@@ -11,52 +11,50 @@ func Basel() Code {
 }
 
 func basel() (Code, uint8) {
-	const bitPrecision = 126
+	const bits = 126
 
 	const (
-		One = Inverted(DUP1) + iota
-		FPSix
-		N
-		Sum
+		one = Inverted(DUP1) + iota
+		bigSix
+		n
+		sum
 	)
 
 	const (
 		_ = Inverted(SWAP1) + iota
 		_
-		SwapN
-		_
+		swapN
 	)
-
-	iter := Code{
-		Fn(ADD,
-			Fn(DIV,
-				FPSix,
-				Fn(MUL, N, N),
-			),
-			// Sum
-		),
-
-		Fn(SwapN,
-			Fn(ADD, N, One),
-		), // Deliberately leaving the old value for a loop counter
-	}
 
 	return Code{
 		PUSH(1),
-		Fn(SHL, PUSH(bitPrecision), PUSH(6)),
-		One,   // N
-		PUSH0, // Sum
+		Fn(SHL, PUSH(bits), PUSH(6)),
+		one,   // n
+		PUSH0, // sum
 
-		JUMPDEST("iter"), stack.SetDepth(4),
-		iter,
+		JUMPDEST("loop"),
+		stack.SetDepth(4),
+
+		Fn(ADD,
+			Fn(DIV,
+				bigSix,
+				Fn(MUL, n, n),
+			),
+			// sum
+		),
+
 		Fn(JUMPI,
-			PUSH("iter"),
-			Fn(GT, PUSH(1<<12) /*old N from iter*/),
+			PUSH("loop"),
+			Fn(GT,
+				PUSH(1<<12),
+				Fn(swapN,
+					Fn(ADD, n, one),
+				),
+			),
 		),
 
 		stack.Transform(4)(0),
-		Fn(SHL, PUSH(bitPrecision)),
-
+		Fn(SHL, PUSH(bits)), // sqrt will remove the precision
 		sqrt(),
-	}, bitPrecision
+	}, bits
 }
