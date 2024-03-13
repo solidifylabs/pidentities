@@ -2,6 +2,7 @@ package pidentities
 
 import (
 	. "github.com/solidifylabs/specops"
+	"github.com/solidifylabs/specops/stack"
 )
 
 // BBP implements the Bailey–Borwein–Plouffe formula.
@@ -10,54 +11,30 @@ func BBP() Code {
 }
 
 func bbp() (Code, uint8) {
-	const precision = 252
+	const bits = 252
+
 	// https://en.wikipedia.org/wiki/Bailey%E2%80%93Borwein%E2%80%93Plouffe_formula
 
 	const (
-		SixteenK = Inverted(DUP1) + iota
-		EightK
-		FourK
-		One
-		Four
-		Five
-		Six
-		Eight
-		BigOne
-		BigTwo
-		BigFour
-		Sum
+		_ = Inverted(DUP1) + iota // 16k
+		eightK
+		fourK
+		one
+		four
+		five
+		six
+		eight
+		bigone
+		bigTwo
+		bigFour
+		sum
 	)
 
 	const (
-		SwapSixteenK = Inverted(SWAP1) + iota
-		SwapEightK
-		SwapFourK
+		swapsixteenK = Inverted(SWAP1) + iota
+		swapEightK
+		swapFourK
 	)
-
-	fracs := Code{
-		Fn(SUB,
-			Fn(DIV,
-				BigFour,
-				Fn(ADD, EightK, One),
-			),
-			Fn(ADD,
-				Fn(DIV,
-					BigTwo,
-					Fn(ADD, EightK, Four),
-				),
-				Fn(ADD,
-					Fn(DIV,
-						BigOne,
-						Fn(ADD, EightK, Five),
-					),
-					Fn(DIV,
-						BigOne,
-						Fn(ADD, EightK, Six),
-					),
-				),
-			),
-		),
-	}
 
 	code := Code{
 		PUSH0, // 16k
@@ -68,30 +45,62 @@ func bbp() (Code, uint8) {
 		PUSH(5),
 		PUSH(6),
 		PUSH(8),
-		Fn(SHL, PUSH(precision), One),
-		Fn(MUL, BigOne, PUSH(2)),
-		Fn(MUL, BigOne, Four),
-		PUSH0, // Sum
+		Fn(SHL, PUSH(bits), one),
+		Fn(MUL, bigone, PUSH(2)),
+		Fn(MUL, bigone, four),
+		PUSH0, // sum
 	}
 
-	body := Code{Fn(SHR, FourK, fracs)}
-
-	for i := 0; i < 32; i++ {
-		code = append(
-			code,
-			Fn(ADD, body /*Sum*/),
-
-			Fn(SwapEightK,
-				Fn(ADD, EightK, Eight),
-			), POP,
-			Fn(SwapSixteenK,
-				Fn(SHL, One, EightK),
-			), POP,
-			Fn(SwapFourK,
-				Fn(SHR, One, EightK),
-			), POP,
-		)
+	fracs := Code{
+		Fn(SUB,
+			Fn(DIV,
+				bigFour,
+				Fn(ADD, eightK, one),
+			),
+			Fn(ADD,
+				Fn(DIV,
+					bigTwo,
+					Fn(ADD, eightK, four),
+				),
+				Fn(ADD,
+					Fn(DIV,
+						bigone,
+						Fn(ADD, eightK, five),
+					),
+					Fn(DIV,
+						bigone,
+						Fn(ADD, eightK, six),
+					),
+				),
+			),
+		),
 	}
 
-	return code, precision
+	return append(
+		code,
+
+		stack.ExpectDepth(12),
+		JUMPDEST("loop"),
+		stack.SetDepth(12),
+
+		Fn(ADD,
+			Fn(SHR, fourK, fracs),
+			/* sum on top*/
+		),
+
+		Fn(swapEightK,
+			Fn(ADD, eightK, eight),
+		), POP,
+		Fn(swapsixteenK,
+			Fn(SHL, one, eightK),
+		), POP,
+		Fn(swapFourK,
+			Fn(SHR, one, eightK),
+		), // Deliberately not popping, to use in loop check
+
+		Fn(JUMPI,
+			PUSH("loop"),
+			Fn(GT, PUSH(1+bits*4) /* old 4k */),
+		),
+	), bits
 }
