@@ -11,58 +11,70 @@ func MadhavaLeibniz() Code {
 }
 
 func leibniz() (Code, uint8) {
-	const precision = 120
+	const bits = 120
 
 	// https://en.wikipedia.org/wiki/Leibniz_formula_for_%CF%80
 
 	const (
-		N = Inverted(DUP1) + iota
-		One
-		Two
-		BigOne
-		Result
+		n = Inverted(DUP1) + iota
+		one
+		two
+		bigOne
+		result
 	)
 
 	const (
-		SwapN = Inverted(SWAP1) + iota
+		swapn = Inverted(SWAP1) + iota
 	)
 
 	const rounds = 100
 
 	code := Code{
-		PUSH(2 * rounds),
-		PUSH(1),
-		Fn(SHL, One, One), // Two
-		Fn(SHL, PUSH(precision), One),
-		BigOne, // Result
+		PUSH(2 * rounds),         // max n (iterates down to zero)
+		PUSH(1),                  //
+		Fn(SHL, one, one),        // two
+		Fn(SHL, PUSH(bits), one), // big one
+		bigOne,                   // result
 
 		stack.ExpectDepth(5),
 		JUMPDEST("loop"),
 		stack.SetDepth(5),
 
-		Fn(DIV,
-			BigOne,
-			Fn(ADD, One, Fn(SHL, One, N)),
+		// n even
+		Fn(ADD,
+			Fn(DIV,
+				bigOne,
+				Fn(ADD,
+					one,
+					Fn(SHL, one, n),
+				),
+			),
 		),
-		ADD,
 
-		Fn(DIV,
-			BigOne,
-			Fn(ADD, One, Fn(SHL, One, Fn(SUB, N, One))),
-		),
-		SWAP1, SUB,
-
-		Fn(SwapN,
-			Fn(SUB, N, Two),
+		// n odd
+		Fn(SUB,
+			SWAP1,
+			Fn(DIV,
+				bigOne,
+				Fn(ADD,
+					one,
+					Fn(SHL, one, Fn(SUB, n, one)),
+				),
+			),
 		),
 
 		Fn(JUMPI,
 			PUSH("loop"),
-			Fn(LT, Two),
+			Fn(LT,
+				two,
+				Fn(swapn,
+					Fn(SUB, n, two),
+				),
+			),
 		),
 
-		Fn(SHL, Two /* top = result */),
+		Fn(SHL, two /* top = result */),
 	}
 
-	return code, precision
+	return code, bits
 }
