@@ -11,55 +11,59 @@ func Wallis() Code {
 }
 
 func wallis() (Code, uint8) {
-	const precision = 127
+	const bits = 127
+
 	// https://en.wikipedia.org/wiki/Wallis_product
 
 	const (
-		Precision = Inverted(DUP1) + iota
-		N
-		Result
-		FourNSq
+		precision = Inverted(DUP1) + iota
+		n
+		_
+		fourNSq
 	)
 
 	const (
 		_ = Inverted(SWAP1) + iota
-		SwapN
-		SwapResult
-		SwapFourNSq
+		swapN
+		swapResult
+		swapFourNSq
 	)
 
 	code := Code{
-		PUSH(precision),
-		PUSH(200),                   // N,
-		Fn(SHL, Precision, PUSH(1)), // Result
+		PUSH(bits),
+		PUSH(200),                   // n,
+		Fn(SHL, precision, PUSH(1)), // result
 
-		JUMPDEST("loop"), stack.SetDepth(3),
+		JUMPDEST("loop"),
+		stack.SetDepth(3),
 
 		Fn(SHL,
 			PUSH(2),
-			Fn(MUL, N, N),
-		), // FourNSq
-
-		Fn(DIV,
-			Fn(SHL, Precision, SwapFourNSq),
-			Fn(SUB, FourNSq, PUSH(1)),
-		),
+			Fn(MUL, n, n),
+		), // fourNSq
 
 		Fn(SHR,
-			Precision,
-			Fn(MUL /* top 2 are Result and fraction */),
+			precision,
+			Fn(MUL,
+				Fn(DIV,
+					Fn(SHL, precision, swapFourNSq),
+					Fn(SUB, fourNSq, PUSH(1)),
+				),
+				/* top = running product */
+			),
 		),
 
-		Fn(SwapN,
-			Fn(SUB, N, PUSH(1)),
-		),
 		Fn(JUMPI,
 			PUSH("loop"),
-			Fn(LT, PUSH(1) /* top = last loop counter*/),
+			Fn(LT,
+				PUSH(1),
+				Fn(swapN,
+					Fn(SUB, n, PUSH(1)),
+				)),
 		),
 
-		Fn(SHL, PUSH(1) /* top = result */),
+		Fn(SHL, PUSH(1) /* top = result */), // identity is π/2
 	}
 
-	return code, precision
+	return code, bits
 }
