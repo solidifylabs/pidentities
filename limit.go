@@ -1,6 +1,9 @@
 package pidentities
 
-import . "github.com/solidifylabs/specops"
+import (
+	. "github.com/solidifylabs/specops" //lint:ignore ST1001 SpecOps DSL is designed to be dot-imported
+	"github.com/solidifylabs/specops/stack"
+)
 
 // Limit implements an iterative sequence that, in the limit, approaches a
 // function of pi:
@@ -13,98 +16,56 @@ func Limit() Code {
 }
 
 func limit() (Code, uint8) {
-	const precision = 122
+	const bits = 122
+
 	// First in https://en.wikipedia.org/wiki/List_of_formulae_involving_%CF%80#Iterative_algorithms
 
 	const (
-		N = Inverted(DUP1) + iota
-		One
-		Precision
-		BigOne
-		A
+		n = Inverted(DUP1) + iota
+		one
+		precision
+		bigOne
+		a
 	)
-
 	const (
 		SwapN = Inverted(SWAP1) + iota
-		_
-		_
-		_
-		SwapA
 	)
 
-	iter := Code{
+	return Code{
+		PUSH0,                   // n
+		PC,                      // 1
+		PUSH(bits),              // precision
+		Fn(SHL, precision, one), // bigOne
+		bigOne,                  // a
+
+		stack.ExpectDepth(5),
+		JUMPDEST("loop"),
+		stack.SetDepth(5),
+
 		Fn(SHR,
-			Precision,
+			precision,
 			Fn(MUL,
-				/* A already on top */
+				/* last a already on top */
 				Fn(ADD,
-					BigOne,
+					bigOne,
 					Fn(DIV,
-						BigOne,
-						Fn(ADD, Fn(SHL, One, N), One),
+						bigOne,
+						Fn(ADD, Fn(SHL, one, n), one),
 					),
 				),
 			),
 		),
 
-		Fn(SwapN, Fn(ADD, One, N)), POP,
-	}
+		Fn(JUMPI,
+			PUSH("loop"),
+			Fn(LT,
+				Fn(SwapN, Fn(ADD, one, n)),
+				PUSH(1000),
+			),
+		),
+		stack.ExpectDepth(5),
 
-	return Code{
-		PUSH0,           // N
-		PC,              // 1
-		PUSH(precision), // Precision
-		Fn(SHL, Precision, One),
-		BigOne, // A
-
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-		iter, iter, iter, iter, iter, iter, iter, iter, iter, iter,
-
-		Fn(SHR, Precision, Fn(MUL, A /* A already on top */)),
-		N, SWAP1, DIV,
-	}, precision
+		Fn(SHR, precision, Fn(MUL, a /* a already on top */)), // a^2
+		Fn(DIV, SWAP1, n),
+	}, bits
 }
