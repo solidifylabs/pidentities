@@ -1,7 +1,7 @@
 package pidentities
 
 import (
-	. "github.com/solidifylabs/specops"
+	. "github.com/solidifylabs/specops" //lint:ignore ST1001 SpecOps DSL is designed to be dot-imported
 	"github.com/solidifylabs/specops/stack"
 )
 
