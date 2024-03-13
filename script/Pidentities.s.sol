@@ -8,6 +8,7 @@ contract PidentitiesDeploy is Script {
     address constant ARRAN = 0xFaaDaaB725709f9Ac6d5C03d9C6A6F5E3511FD70;
 
     function deploy() public returns (Pidentities) {
+        vm.broadcast(ARRAN);
         return new Pidentities(ARRAN, false);
     }
 
@@ -44,7 +45,7 @@ contract PidentitiesDeploy is Script {
         });
 
         airdrops[3] = Pidentities.Mint({
-            to: ARRAN, // TODO
+            to: 0x16cCd2a1346978e27FDCbda43569E251C4227341,
             c: Pidentities.Contract({
                 name: "Limiting%20sequence",
                 salt: 0,
@@ -79,6 +80,7 @@ contract PidentitiesDeploy is Script {
             })
         });
 
+        vm.broadcast(ARRAN);
         return nft.mint(airdrops);
     }
 }

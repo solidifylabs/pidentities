@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {PidentitiesDeploy} from "../script/Pidentities.s.sol";
-import {Pidentities} from "../src/Pidentities.sol";
+import {Pidentities, Ownable} from "../src/Pidentities.sol";
 
 contract PidentitiesTest is Test {
     PidentitiesDeploy public deploy;
@@ -18,9 +18,7 @@ contract PidentitiesTest is Test {
     }
 
     function testAirdrops() public {
-        vm.startPrank(ARRAN);
         address[] memory deployed = deploy.airdrop(nft);
-        vm.stopPrank();
 
         string memory actual = "3.14159265358979323846264338327950288419716939937510582097494459230781640628";
 
@@ -47,5 +45,16 @@ contract PidentitiesTest is Test {
             }
             console.log(nft.tokenURI(tokenId));
         }
+    }
+
+    function testMintAuth(address vandal, Pidentities.Mint memory mint) public {
+        vm.assume(vandal != ARRAN);
+
+        Pidentities.Mint[] memory mints = new Pidentities.Mint[](1);
+        mints[0] = mint;
+
+        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
+        vm.prank(vandal);
+        nft.mint(mints);
     }
 }

@@ -52,7 +52,7 @@ contract Pidentities is ERC721, Ownable {
      * @dev Deploys all `Contracts` and mints an associated NFT to the `Mint.to` address.
      * @return Addresses of all deployed contracts; NFT token IDs are simply the addresses cast as uint256.
      */
-    function mint(Mint[] memory mints) public returns (address[] memory) {
+    function mint(Mint[] memory mints) external onlyOwner returns (address[] memory) {
         address[] memory deployed = new address[](mints.length);
         for (uint256 i = 0; i < mints.length; ++i) {
             deployed[i] = _mint(mints[i].to, mints[i].c);
