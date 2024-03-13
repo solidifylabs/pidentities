@@ -28,7 +28,7 @@ func limit() (Code, uint8) {
 		a
 	)
 	const (
-		SwapN = Inverted(SWAP1) + iota
+		swapN = Inverted(SWAP1) + iota
 	)
 
 	return Code{
@@ -59,7 +59,7 @@ func limit() (Code, uint8) {
 		Fn(JUMPI,
 			PUSH("loop"),
 			Fn(LT,
-				Fn(SwapN, Fn(ADD, one, n)),
+				Fn(swapN, Fn(ADD, one, n)),
 				PUSH(1000),
 			),
 		),
