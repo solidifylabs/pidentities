@@ -6,7 +6,7 @@ import {ERC721} from "solady/tokens/ERC721.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
 import {LibString} from "solady/utils/LibString.sol";
-import {Bytecode} from "sstore2/utils/Bytecode.sol";
+import {SSTORE2Map, Bytecode} from "sstore2/SSTORE2Map.sol";
 
 interface Pidentity {
     /**
@@ -20,17 +20,14 @@ interface Pidentity {
  */
 contract Pidentities is ERC721, Ownable {
     using LibString for uint256;
+    using SSTORE2Map for bytes32;
 
-    /**
-     *
-     */
+    /// @dev Errors
     error DeploymentFailed();
     error NonPiPrefix(uint160);
     error NonExistentToken(uint256);
 
-    /**
-     *
-     */
+    /// @dev Whether to require that salts result in a pi-like prefix. Disabled for early testing.
     bool private immutable requirePiPrefix;
 
     constructor(address owner, bool _requirePiPrefix) {
@@ -38,25 +35,22 @@ contract Pidentities is ERC721, Ownable {
         requirePiPrefix = _requirePiPrefix;
     }
 
-    /**
-     *
-     */
+    /// @dev A `Pidentity` contract to deploy.
     struct Contract {
         string name;
         bytes deployedCode;
         uint256 salt;
     }
 
-    /**
-     *
-     */
+    /// @dev Coupling of a `Contract` and the recipient of the NFT.
     struct Mint {
         address to;
         Contract c;
     }
 
     /**
-     *
+     * @dev Deploys all `Contracts` and mints an associated NFT to the `Mint.to` address.
+     * @return Addresses of all deployed contracts; NFT token IDs are simply the addresses cast as uint256.
      */
     function mint(Mint[] memory mints) public returns (address[] memory) {
         address[] memory deployed = new address[](mints.length);
@@ -66,18 +60,17 @@ contract Pidentities is ERC721, Ownable {
         return deployed;
     }
 
-    /**
-     *
-     */
+    /// @dev Internal implementation of `mint()` for a single token, without authorisation check.
     function _mint(address to, Contract memory c) internal returns (address) {
         address addr = _deploy(c);
+
+        _storageKey(addr).write(bytes(c.name));
         _mint(to, uint256(uint160(addr)));
+
         return addr;
     }
 
-    /**
-     *
-     */
+    /// @dev CREATE2 deploys the `Contract`, validating the pi-like prefix if required.
     function _deploy(Contract memory c) internal returns (address) {
         bytes memory createCode = Bytecode.creationCodeFor(c.deployedCode);
         uint256 salt = c.salt;
@@ -98,7 +91,10 @@ contract Pidentities is ERC721, Ownable {
     }
 
     /**
-     *
+     * @dev Calls the NFT's associated contract, returning pi as a fraction.
+     * @return numerator Numerator of the pi fraction.
+     * @return denominator Denominator of the pi fraction. Always 1 << `bitsOfPrecision`, returned as a convenience.
+     * @return bitsOfPrecision Number of bits used in approximating pi. This does not guarantee correctness to this precision.
      */
     function piFrac(uint256 tokenId)
         public
@@ -109,13 +105,11 @@ contract Pidentities is ERC721, Ownable {
             revert NonExistentToken(tokenId);
         }
         uint256 bits;
-        (numerator, bits) = Pidentity(address(uint160(tokenId))).pi();
+        (numerator, bits) = approximator(tokenId).pi();
         return (numerator, 1 << bits, bits);
     }
 
-    /**
-     *
-     */
+    /// @dev Converts `piFrac(tokenId)` into a (decimal) string representation of pi.
     function piString(uint256 tokenId) public view returns (string memory) {
         (uint256 num, uint256 denom, uint256 bits) = piFrac(tokenId);
         uint256 hartleys = (1000 * bits) / 3322 - 1;
@@ -124,6 +118,11 @@ contract Pidentities is ERC721, Ownable {
         uint256 decimal = FixedPointMathLib.fullMulDiv(num % denom, 10 ** hartleys, denom);
 
         return string.concat(integer.toString(), ".", decimal.toString());
+    }
+
+    /// @dev The pi-approximating contract associated with the NFT.
+    function approximator(uint256 tokenId) public pure returns (Pidentity) {
+        return Pidentity(address(uint160(tokenId)));
     }
 
     /**
@@ -147,10 +146,20 @@ contract Pidentities is ERC721, Ownable {
         // forgefmt: disable-next-item
         return string.concat(
             "data:application/json;utf8,{",
-                '"name": "",', // TODO
+                '"name": "',string(_storageKey(tokenId).read()),'",',
                 unicode'"description": "π%20≈%20', piString(tokenId),'",',
                 '"image": "', '', '"', // TODO
             "}"
         );
+    }
+
+    /// @dev An SSTORE2Map storage key for the `tokenId`.
+    function _storageKey(uint256 tokenId) internal pure returns (bytes32) {
+        return bytes32(tokenId);
+    }
+
+    /// @dev An SSTORE2Map storage key for the deployed pi approximator. Equivalent to the uint256 variant.
+    function _storageKey(address addr) internal pure returns (bytes32) {
+        return _storageKey(uint256(uint160(addr)));
     }
 }
