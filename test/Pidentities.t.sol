@@ -31,7 +31,7 @@ contract PidentitiesTest is Test {
 
     function testAirdrops() public {
         vm.prank(OWNER);
-        nft.setBaseImageURI("treble/");
+        deploy.setBaseImageURI(nft);
 
         address[] memory deployed = deploy.airdrop(nft);
 
