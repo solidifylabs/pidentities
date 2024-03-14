@@ -18,19 +18,20 @@ contract PidentitiesTest is Test {
     }
 
     function testVanityAddress() public view {
-        bytes3 prefix = bytes3(bytes20(uint160(address(nft))));
-        bytes3 vanity = hex"314159";
-        assertEq(prefix, vanity);
-
         // forgefmt: disable-next-item
         console.logBytes32(keccak256(abi.encodePacked(
             type(Pidentities).creationCode,
-            abi.encode(OWNER, false)
+            abi.encode(OWNER, true)
         )));
+
+        console.log(address(nft));
+
+        bytes4 prefix = bytes4(bytes20(uint160(address(nft))));
+        bytes4 vanity = hex"31415926";
+        assertEq(prefix, vanity);
     }
 
     function testAirdrops() public {
-        vm.prank(OWNER);
         deploy.setBaseImageURI(nft);
 
         address[] memory deployed = deploy.airdrop(nft);

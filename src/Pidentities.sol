@@ -86,7 +86,7 @@ contract Pidentities is ERC721, Ownable {
         if (addr == address(0)) {
             revert DeploymentFailed();
         }
-        if (requirePiPrefix && uint160(addr) / 1e44 != 3141) {
+        if (requirePiPrefix && uint160(addr) / 1e40 != 31415926) {
             revert NonPiPrefix(uint160(addr));
         }
 
