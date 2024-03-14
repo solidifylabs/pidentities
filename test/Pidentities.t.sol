@@ -17,6 +17,18 @@ contract PidentitiesTest is Test {
         vm.label(OWNER, "Arran");
     }
 
+    function testVanityAddress() public view {
+        bytes3 prefix = bytes3(bytes20(uint160(address(nft))));
+        bytes3 vanity = hex"314159";
+        assertEq(prefix, vanity);
+
+        // forgefmt: disable-next-item
+        console.logBytes32(keccak256(abi.encodePacked(
+            type(Pidentities).creationCode,
+            abi.encode(OWNER, false)
+        )));
+    }
+
     function testAirdrops() public {
         vm.prank(OWNER);
         nft.setBaseImageURI("treble/");

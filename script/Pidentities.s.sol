@@ -6,10 +6,11 @@ import {Pidentities} from "../src/Pidentities.sol";
 
 contract PidentitiesDeploy is Script {
     address constant ARRAN = 0xFaaDaaB725709f9Ac6d5C03d9C6A6F5E3511FD70;
+    bytes32 constant DEPLOYMENT_SALT = 0x8696b8d500801711525335701b0f9d282d0c46b71fc9e396b90db937188d8b52;
 
     function deploy() public returns (Pidentities) {
         vm.broadcast(ARRAN);
-        return new Pidentities(ARRAN, false);
+        return new Pidentities{salt: DEPLOYMENT_SALT}(ARRAN, false);
     }
 
     function airdrop(Pidentities nft) public returns (address[] memory) {
