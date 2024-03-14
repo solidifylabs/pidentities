@@ -30,6 +30,9 @@ contract Pidentities is ERC721, Ownable {
     /// @dev Whether to require that salts result in a pi-like prefix. Disabled for early testing.
     bool private immutable requirePiPrefix;
 
+    /// @dev Equivalent to baseTokenURI but only for the image.
+    string private _baseImageURI;
+
     constructor(address owner, bool _requirePiPrefix) {
         _initializeOwner(owner);
         requirePiPrefix = _requirePiPrefix;
@@ -90,6 +93,11 @@ contract Pidentities is ERC721, Ownable {
         return addr;
     }
 
+    /// @dev Sets the URI prefix for `tokenURI()` images.
+    function setBaseImageURI(string memory base) external onlyOwner {
+        _baseImageURI = base;
+    }
+
     /**
      * @dev Calls the NFT's associated contract, returning pi as a fraction.
      * @return numerator Numerator of the pi fraction.
@@ -122,7 +130,11 @@ contract Pidentities is ERC721, Ownable {
 
     /// @dev The pi-approximating contract associated with the NFT.
     function approximator(uint256 tokenId) public pure returns (Pidentity) {
-        return Pidentity(address(uint160(tokenId)));
+        return Pidentity(_contract(tokenId));
+    }
+
+    function _contract(uint256 tokenId) internal pure returns (address) {
+        return address(uint160(tokenId));
     }
 
     /**
@@ -143,13 +155,18 @@ contract Pidentities is ERC721, Ownable {
      * @inheritdoc ERC721
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        // forgefmt: disable-next-item
         return string.concat(
             "data:application/json;utf8,{",
-                '"name": "',string(_storageKey(tokenId).read()),'",',
-                unicode'"description": "π%20≈%20', piString(tokenId),'",',
-                '"image": "', '', '"', // TODO
-            "}"
+            "\"name\": \"",
+            string(_storageKey(tokenId).read()),
+            "\",",
+            unicode"\"description\": \"π%20≈%20",
+            piString(tokenId),
+            "\",",
+            "\"image\": \"",
+            _baseImageURI,
+            LibString.toHexStringNoPrefix(uint256(_contract(tokenId).codehash), 32),
+            ".png\"}"
         );
     }
 
