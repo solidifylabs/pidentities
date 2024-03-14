@@ -49,7 +49,7 @@ contract PidentitiesDeploy is Script {
             c: Pidentities.Contract({
                 name: "A%20limiting%20sequence",
                 salt: 0,
-                deployedCode: hex"5f58607a81811b805b8385851b018204820102821c6103e885850195106008578002821c8490045f52607a60205260405ff3"
+                deployedCode: hex"5f58607581811b805b8385851b018204820102821c62054c4085850195106008578002821c8490045f52607560205260405ff3"
             })
         });
 

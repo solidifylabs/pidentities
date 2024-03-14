@@ -16,7 +16,8 @@ func Limit() Code {
 }
 
 func limit() (Code, uint8) {
-	const bits = 122
+	// Capped by the growth of a_n
+	const bits = 117
 
 	// First in https://en.wikipedia.org/wiki/List_of_formulae_involving_%CF%80#Iterative_algorithms
 
@@ -60,7 +61,7 @@ func limit() (Code, uint8) {
 			PUSH("loop"),
 			Fn(LT,
 				Fn(swapN, Fn(ADD, one, n)),
-				PUSH(1000),
+				PUSH(0x054c40), // ~25M gas
 			),
 		),
 		stack.ExpectDepth(5),

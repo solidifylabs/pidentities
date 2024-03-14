@@ -29,7 +29,7 @@ contract PidentitiesTest is Test {
             bytes32(0xeda528834408a2fb8fb98505502130c59a1f3b032e07da0dd8536fbfd8ffbfc3),
             0x216c212a285ec0e44fbda4a66018196caed3df48773c30fef5391df93919dc8a,
             0xd2d75e2fc5b9ea8a5ec924be1fe5233570be1e6ff11516e1051289ca8a37fd32,
-            0x98e823b40930b3d81c153973537bca9c9c63de3aa694000d0e945a918627fcd6,
+            0xbd28dc882908901c41c14789265fb43b96edcfe58c9fb61737e2451e8708ce5b,
             0xdbd87bae04a2a5421a7f55ff8377ca84f5f9969359d68a40f195dd245350fe5a,
             0x88fdf694ef8524bde7a8a996680317164eccc5e2ad46063f6cb841c487214e08,
             0x49c74e3bf1922e804be0030e6c7f20179a5556e10b82ae2126a877cbcf265c06
@@ -49,11 +49,11 @@ contract PidentitiesTest is Test {
 
             // Parsing a data URI in Solidity is a pain, so this is here for inspection only and I'll "test" with a
             // testnet deployment.
-            console.log(nft.tokenURI(tokenId));
+            console.log(nft.tokenURI{gas: 26e6}(tokenId));
 
             vm.prank(OWNER);
             nft.setTokenName(tokenId, "Gary"); // no, not V
-            console.log(nft.tokenURI(tokenId));
+            console.log(nft.tokenURI{gas: 26e6}(tokenId));
         }
     }
 

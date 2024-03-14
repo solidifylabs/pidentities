@@ -88,7 +88,7 @@ func TestApproximations(t *testing.T) {
 			if gasUsed > 25e6 {
 				t.Error("Used too much gas; want <25M")
 			}
-			if want := int64(24_995_000); gasUsed > 75_000 && gasUsed < want {
+			if want := int64(24_995_000); gasUsed > 40_000 && gasUsed < want {
 				t.Errorf("Gas-intensive method not optimised; want at least %s gas used", humanize.Comma(want))
 			}
 
