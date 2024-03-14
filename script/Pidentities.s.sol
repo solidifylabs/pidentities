@@ -82,6 +82,25 @@ contract PidentitiesDeploy is Script {
         });
 
         vm.broadcast(ARRAN);
-        return nft.mint(airdrops);
+        address[] memory deployed = nft.mint(airdrops);
+
+        for (uint256 i = 0; i < airdrops.length; ++i) {
+            uint256 tokenId = uint256(uint160(deployed[i]));
+            nft.ownerOf(tokenId);
+            nft.tokenURI(tokenId);
+        }
+
+        return deployed;
+    }
+
+    function setBaseImageURI(Pidentities nft) public {
+        vm.broadcast(ARRAN);
+        nft.setBaseImageURI("ipfs://QmNqk3jdqSFqojDd3nWdYKaSUkA5BmEqhtCUi17oHEAamq/");
+    }
+
+    function e2e() public {
+        Pidentities nft = deploy();
+        setBaseImageURI(nft);
+        airdrop(nft);
     }
 }
