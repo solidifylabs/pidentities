@@ -98,6 +98,13 @@ contract Pidentities is ERC721, Ownable {
         _baseImageURI = base;
     }
 
+    /// @dev Sets the metadata name of a specific token.
+    function setTokenName(uint256 tokenId, string memory name_) external onlyOwner {
+        uint96 data = _getExtraData(tokenId) + 1;
+        _setExtraData(tokenId, data);
+        _storageKey(tokenId).write(bytes(name_));
+    }
+
     /**
      * @dev Calls the NFT's associated contract, returning pi as a fraction.
      * @return numerator Numerator of the pi fraction.
@@ -130,11 +137,7 @@ contract Pidentities is ERC721, Ownable {
 
     /// @dev The pi-approximating contract associated with the NFT.
     function approximator(uint256 tokenId) public pure returns (Pidentity) {
-        return Pidentity(_contract(tokenId));
-    }
-
-    function _contract(uint256 tokenId) internal pure returns (address) {
-        return address(uint160(tokenId));
+        return Pidentity(_tokenToAddress(tokenId));
     }
 
     /**
@@ -165,18 +168,28 @@ contract Pidentities is ERC721, Ownable {
             "\",",
             "\"image\": \"",
             _baseImageURI,
-            LibString.toHexStringNoPrefix(uint256(_contract(tokenId).codehash), 32),
+            LibString.toHexStringNoPrefix(uint256(_tokenToAddress(tokenId).codehash), 32),
             ".png\"}"
         );
     }
 
     /// @dev An SSTORE2Map storage key for the `tokenId`.
-    function _storageKey(uint256 tokenId) internal pure returns (bytes32) {
-        return bytes32(tokenId);
+    function _storageKey(uint256 tokenId) internal view returns (bytes32) {
+        return bytes32(abi.encodePacked(_tokenToAddress(tokenId), _getExtraData(tokenId)));
     }
 
     /// @dev An SSTORE2Map storage key for the deployed pi approximator. Equivalent to the uint256 variant.
-    function _storageKey(address addr) internal pure returns (bytes32) {
-        return _storageKey(uint256(uint160(addr)));
+    function _storageKey(address addr) internal view returns (bytes32) {
+        return bytes32(abi.encodePacked(addr, _getExtraData(_addressToToken(addr))));
+    }
+
+    /// @dev Returns the address of the contract associated with the NFT. Simply strips the leading 96 bits.
+    function _tokenToAddress(uint256 tokenId) internal pure returns (address) {
+        return address(uint160(tokenId));
+    }
+
+    /// @dev Inverse of _tokenToAddress.
+    function _addressToToken(address addr) internal pure returns (uint256) {
+        return uint256(uint160(addr));
     }
 }

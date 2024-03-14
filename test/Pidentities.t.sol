@@ -9,16 +9,16 @@ contract PidentitiesTest is Test {
     PidentitiesDeploy public deploy;
     Pidentities public nft;
 
-    address constant ARRAN = 0xFaaDaaB725709f9Ac6d5C03d9C6A6F5E3511FD70;
+    address constant OWNER = 0xFaaDaaB725709f9Ac6d5C03d9C6A6F5E3511FD70;
 
     function setUp() public {
         deploy = new PidentitiesDeploy();
         nft = deploy.deploy();
-        vm.label(ARRAN, "Arran");
+        vm.label(OWNER, "Arran");
     }
 
     function testAirdrops() public {
-        vm.prank(ARRAN);
+        vm.prank(OWNER);
         nft.setBaseImageURI("treble/");
 
         address[] memory deployed = deploy.airdrop(nft);
@@ -47,12 +47,20 @@ contract PidentitiesTest is Test {
                 assertEq(pi, actual, "exact value of pi for BBP");
             }
 
+            // Parsing a data URI in Solidity is a pain, so this is here for inspection only and I'll "test" with a
+            // testnet deployment.
+            console.log(nft.tokenURI(tokenId));
+
+            vm.prank(OWNER);
+            nft.setTokenName(tokenId, "Gary"); // no, not V
             console.log(nft.tokenURI(tokenId));
         }
     }
 
-    function testMintAuth(address vandal, Pidentities.Mint memory mint, string memory baseImageURI) public {
-        vm.assume(vandal != ARRAN);
+    function testMintAuth(address vandal, Pidentities.Mint memory mint, string memory graffiti) public {
+        vm.assume(vandal != OWNER);
+
+        address[] memory deployed = deploy.airdrop(nft);
 
         Pidentities.Mint[] memory mints = new Pidentities.Mint[](1);
         mints[0] = mint;
@@ -65,7 +73,12 @@ contract PidentitiesTest is Test {
         nft.mint(mints);
 
         vm.expectRevert(err);
-        nft.setBaseImageURI(baseImageURI);
+        nft.setBaseImageURI(graffiti);
+
+        for (uint256 i = 0; i < deployed.length; ++i) {
+            vm.expectRevert(err);
+            nft.setTokenName(uint256(uint160(deployed[i])), graffiti);
+        }
 
         vm.stopPrank();
     }
