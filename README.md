@@ -1,66 +1,7 @@
-## Foundry
+## πdentities NFTs
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+[`0x31415926a97a56473c1bea14de79c7303b025c5a`](https://basescan.org/token/0x31415926a97a56473c1bea14de79c7303b025c5a) | [OpenSea collection](https://opensea.io/collection/pidentities)
 
-Foundry consists of:
+Each πdentity NFT ID encodes the address of an individually crafted smart contract, hand-written in EVM bytecode to approximate the value of π by a distinct method. The NFT artwork is a mathematical representation of the associated formula, while the NFT description is the approximation of π, generated directly by the contract.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+The implementations of the individual contracts can be found in the `.go` files of this repo.
